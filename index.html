@@ -1,1 +1,603 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozy Player – Your Music Overlay for Windows</title>
+<meta name="description" content="Cozy Player – A sleek Spotify overlay for Windows with 14+ themes, Discord Rich Presence, and music controls.">
+<style>
+    :root {
+        --bg: #0b0813;
+        --bg2: #120d1e;
+        --card: rgba(255, 255, 255, 0.045);
+        --card-border: rgba(255, 255, 255, 0.09);
+        --text: #f2eefb;
+        --muted: #a89fc0;
+        --purple: #9666ff;
+        --purple-dark: #5c34c9;
+        --pink: #ff5d8f;
+        --radius: 18px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        overflow-x: hidden;
+    }
+
+    .glow {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .glow-1 { width: 520px; height: 520px; background: #6b34d9; top: -180px; left: -120px; }
+    .glow-2 { width: 460px; height: 460px; background: #ff3d6d; bottom: -160px; right: -120px; opacity: 0.28; }
+    .glow-3 { width: 380px; height: 380px; background: #2dd6ff; top: 40%; right: -160px; opacity: 0.16; }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+
+    nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 0;
+    }
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 0.3px;
+    }
+    .brand-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        background: linear-gradient(160deg, #9666ff, #5c34c9);
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(124, 80, 235, 0.5);
+    }
+    .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        margin-left: 26px;
+        font-size: 15px;
+        transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .hero {
+        text-align: center;
+        padding: 70px 0 56px;
+    }
+    .hero-logo {
+        width: 110px;
+        height: 110px;
+        border-radius: 28px;
+        background: linear-gradient(160deg, #a07bff 0%, #6b34d9 55%, #4b2296 100%);
+        display: grid;
+        place-items: center;
+        margin: 0 auto 30px;
+        font-size: 60px;
+        color: #fff;
+        box-shadow: 0 18px 50px rgba(110, 60, 220, 0.45), inset 0 2px 0 rgba(255,255,255,0.35);
+        animation: float 5s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .hero h1 {
+        font-size: clamp(40px, 7vw, 64px);
+        font-weight: 800;
+        letter-spacing: -1px;
+        line-height: 1.1;
+        background: linear-gradient(90deg, #fff 20%, #c9a8ff 60%, #9666ff 90%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .developer-tag {
+        font-size: 16px;
+        color: var(--muted);
+        margin-top: 8px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    .hero p.tagline {
+        color: var(--muted);
+        font-size: clamp(16px, 2.4vw, 20px);
+        max-width: 620px;
+        margin: 18px auto 0;
+    }
+    .hero-badges {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 22px;
+    }
+    .badge {
+        background: rgba(150, 102, 255, 0.12);
+        border: 1px solid rgba(150, 102, 255, 0.3);
+        color: #d5c0ff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+    }
+
+    .cta-row {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 34px;
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+        padding: 15px 30px;
+        border-radius: 14px;
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #9666ff, #6b34d9);
+        color: #fff;
+        box-shadow: 0 10px 30px rgba(110, 60, 220, 0.45);
+    }
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 40px rgba(110, 60, 220, 0.6);
+    }
+    .btn-ghost {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        color: var(--text);
+    }
+    .btn-ghost:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.08);
+    }
+    .btn .ico { font-size: 19px; }
+
+    section { padding: 64px 0; }
+    .section-head {
+        text-align: center;
+        margin-bottom: 44px;
+    }
+    .section-head h2 {
+        font-size: clamp(28px, 4.5vw, 40px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    .section-head p {
+        color: var(--muted);
+        max-width: 560px;
+        margin: 12px auto 0;
+    }
+
+    .showcase-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 22px;
+    }
+    .shot-card {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        cursor: zoom-in;
+        transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    }
+    .shot-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5);
+        border-color: rgba(150, 102, 255, 0.45);
+    }
+    .shot-card .img-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+            radial-gradient(90% 90% at 50% 0%, rgba(150,102,255,0.10), transparent 70%),
+            #0e0a18;
+        padding: 26px;
+        min-height: 170px;
+    }
+    .shot-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+        transition: transform 0.3s;
+    }
+    .shot-card:hover img { transform: scale(1.04); }
+    .shot-card .shot-info {
+        padding: 16px 20px 18px;
+        border-top: 1px solid var(--card-border);
+    }
+    .shot-card .shot-info h3 {
+        font-size: 17px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .shot-card .shot-info p {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-top: 4px;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    .feature {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        padding: 26px;
+        transition: transform 0.25s, border-color 0.25s;
+    }
+    .feature:hover {
+        transform: translateY(-4px);
+        border-color: rgba(150, 102, 255, 0.4);
+    }
+    .feature .f-ico {
+        font-size: 30px;
+        margin-bottom: 14px;
+    }
+    .feature h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .feature p {
+        color: var(--muted);
+        font-size: 14.5px;
+    }
+
+    .themes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        max-width: 780px;
+        margin: 0 auto;
+    }
+    .theme-tag {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-size: 14px;
+        color: #ddd6ee;
+        transition: all 0.2s;
+        cursor: default;
+    }
+    .theme-tag:hover {
+        background: rgba(150, 102, 255, 0.16);
+        border-color: rgba(150, 102, 255, 0.5);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .download-cta {
+        background:
+            radial-gradient(120% 120% at 50% 0%, rgba(150, 102, 255, 0.16), transparent 60%),
+            linear-gradient(160deg, rgba(150, 102, 255, 0.08), rgba(255, 93, 143, 0.05));
+        border: 1px solid rgba(150, 102, 255, 0.3);
+        border-radius: 26px;
+        padding: 56px 34px;
+        text-align: center;
+    }
+    .download-cta h2 {
+        font-size: clamp(26px, 4vw, 38px);
+        font-weight: 800;
+    }
+    .download-cta p {
+        color: var(--muted);
+        max-width: 480px;
+        margin: 12px auto 28px;
+    }
+    .version-note {
+        margin-top: 18px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+    .version-note code {
+        background: rgba(255,255,255,0.08);
+        padding: 2px 8px;
+        border-radius: 6px;
+        color: #cfe8ff;
+        font-size: 12.5px;
+    }
+
+    footer {
+        border-top: 1px solid var(--card-border);
+        padding: 30px 0 44px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+    }
+    footer .brand { justify-content: center; margin-bottom: 10px; }
+    footer .brand .brand-logo { width: 30px; height: 30px; font-size: 16px; border-radius: 8px; }
+
+    .lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(6, 4, 12, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 30px;
+        cursor: zoom-out;
+    }
+    .lightbox.open { display: flex; animation: fade 0.2s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .lightbox img {
+        max-width: min(760px, 92vw);
+        max-height: 86vh;
+        border-radius: 14px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+    }
+    .lightbox .lb-title {
+        position: absolute;
+        bottom: 26px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 700;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 8px 20px;
+        border-radius: 999px;
+        font-size: 15px;
+    }
+
+    @media (max-width: 640px) {
+        .nav-links a { margin-left: 16px; }
+        .hero { padding: 50px 0 40px; }
+        section { padding: 48px 0; }
+    }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<div class="container">
+    <nav>
+        <div class="brand">
+            <div class="brand-logo">♪</div>
+            Cozy Player
+        </div>
+        <div class="nav-links">
+            <a href="#showcase">Styles</a>
+            <a href="#features">Features</a>
+            <a href="#download">Download</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-logo">♪</div>
+        <h1>Cozy Player</h1>
+        <div class="developer-tag">developed by AfkChicken</div>
+        <p class="tagline">Your sleek music overlay for Windows – with 14+ themes, Discord Rich Presence, and full music controls. Runs wherever Spotify runs.</p>
+        <div class="hero-badges">
+            <span class="badge">🎨 13 Themes</span>
+            <span class="badge">🎮 Discord Rich Presence</span>
+            <span class="badge">🎵 Spotify & Windows Media</span>
+            <span class="badge">🪟 Windows 10 / 11</span>
+        </div>
+        <div class="cta-row">
+            <a class="btn btn-primary" href="https://github.com/AfkChickens/Cozy-Player/releases/download/V1/player_installer.exe">
+                <span class="ico">⬇</span> Download Now
+            </a>
+            <a class="btn btn-ghost" href="#showcase">
+                <span class="ico">✦</span> View Styles
+            </a>
+        </div>
+    </header>
+
+    <section id="showcase">
+        <div class="section-head">
+            <h2>Your Player. Your Style.</h2>
+            <p>From Minecraft blocks to DOOM fire – change the look anytime directly in the player.</p>
+        </div>
+        <div class="showcase-grid">
+            <div class="shot-card" data-title="Classic">
+                <div class="img-wrap"><img src="img/classic.png" alt="Cozy Player in Classic Style"></div>
+                <div class="shot-info">
+                    <h3><span class="dot" style="background:#ff5d5d"></span>Classic</h3>
+                    <p>The classic, elegant look with a red accent.</p>
+                </div>
+            </div>
+            <div class="shot-card" data-title="DOOM">
+                <div class="img-wrap"><img src="img/doom.png" alt="Cozy Player in DOOM Style"></div>
+                <div class="shot-info">
+                    <h3><span class="dot" style="background:#ff7b1a"></span>DOOM</h3>
+                    <p>Blazing fire, dark metallic – Rip and tear!</p>
+                </div>
+            </div>
+            <div class="shot-card" data-title="White PC">
+                <div class="img-wrap"><img src="img/white-pc.png" alt="Cozy Player in White PC Style"></div>
+                <div class="shot-info">
+                    <h3><span class="dot" style="background:#e8e8f0"></span>White PC</h3>
+                    <p>Bright frosted glass design with soft RGB effects.</p>
+                </div>
+            </div>
+            <div class="shot-card" data-title="Resident Evil">
+                <div class="img-wrap"><img src="img/resident-evil.png" alt="Cozy Player in Resident Evil Style"></div>
+                <div class="shot-info">
+                    <h3><span class="dot" style="background:#3bb273"></span>Resident Evil</h3>
+                    <p>Dark Umbrella look – Welcome to Raccoon City.</p>
+                </div>
+            </div>
+            <div class="shot-card" data-title="Ambient">
+                <div class="img-wrap"><img src="img/ambient.png" alt="Cozy Player in Ambient Style"></div>
+                <div class="shot-info">
+                    <h3><span class="dot" style="background:#a06bff"></span>Ambient</h3>
+                    <p>Automatically adapts to the colors of your album cover – always in the right look.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-head">
+            <h2>All Themes at a Glance</h2>
+            <p>Every style has its own animations, sounds, and buttons – including ambient modes that adapt to your music.</p>
+        </div>
+        <div class="themes">
+            <span class="theme-tag">Minecraft Style</span>
+            <span class="theme-tag">Simple</span>
+            <span class="theme-tag">Subnautica 1</span>
+            <span class="theme-tag">Subnautica 2</span>
+            <span class="theme-tag">DOOM</span>
+            <span class="theme-tag">Counter-Strike 2</span>
+            <span class="theme-tag">White PC</span>
+            <span class="theme-tag">Rainbow</span>
+            <span class="theme-tag">Resident Evil</span>
+            <span class="theme-tag">Discord</span>
+            <span class="theme-tag">Ambient</span>
+            <span class="theme-tag">Ambient Game</span>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="section-head">
+            <h2>Features</h2>
+            <p>Everything a modern music overlay needs – and a little bit more.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature">
+                <div class="f-ico">🎮</div>
+                <h3>Discord Rich Presence</h3>
+                <p>Shows song, artist, album cover, and progress bar directly in your Discord status – with anonymous mode.</p>
+            </div>
+            <div class="feature">
+                <div class="f-ico">🎵</div>
+                <h3>Spotify & Windows</h3>
+                <p>Detects your music via Spotify or Windows Media Controls (SMTC) – without Premium, without logging in.</p>
+            </div>
+            <div class="feature">
+                <div class="f-ico">🎨</div>
+                <h3>13 handmade themes</h3>
+                <p>From Minecraft grass to the CS2 menu: Each theme has its own colors, animations, glows, and click sounds.</p>
+            </div>
+            <div class="feature">
+                <div class="f-ico">🖱️</div>
+                <h3>Always on top</h3>
+                <p>The player hovers over games and apps – and lets mouse clicks pass through, so it never gets in the way.</p>
+            </div>
+            <div class="feature">
+                <div class="f-ico">⚙️</div>
+                <h3>Fully customizable</h3>
+                <p>Size, position, opacity, accent colors, corner radius, and auto-hide – all via sliders.</p>
+            </div>
+            <div class="feature">
+                <div class="f-ico">🔊</div>
+                <h3>Ambient Modes</h3>
+                <p>Ambient adapts to the album cover, Ambient Game even reads the screen color around your mouse.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="download">
+        <div class="download-cta">
+            <h2>Ready for Cozy Player?</h2>
+            <p>Download the app, start your music, and enjoy the most beautiful mini-player on your screen.</p>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="https://github.com/AfkChickens/Cozy-Player/releases/download/V1/player_installer.exe">
+                    <span class="ico">⬇</span> Download player_installer.exe
+                </a>
+            </div>
+            <div class="version-note">Windows 10/11 · ~70 MB · Portable – no installation needed</div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="brand">
+            <div class="brand-logo">♪</div>
+            Cozy Player
+        </div>
+        <p>Made with ♪ for everyone who loves music.</p>
+    </footer>
+</div>
+
+<div class="lightbox" id="lightbox">
+    <img id="lightbox-img" alt="">
+    <div class="lb-title" id="lightbox-title"></div>
+</div>
+
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script>
+    const lenis = new Lenis()
+
+    function raf(time) {
+        lenis.raf(time)
+        requestAnimationFrame(raf)
+    }
+
+    requestAnimationFrame(raf)
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault()
+            lenis.scrollTo(this.getAttribute('href'))
+        })
+    })
+
+    const lightbox = document.getElementById('lightbox')
+    const lbImg = document.getElementById('lightbox-img')
+    const lbTitle = document.getElementById('lightbox-title')
+
+    document.querySelectorAll('.shot-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            const img = card.querySelector('img')
+            lbImg.src = img.src
+            lbImg.alt = img.alt
+            lbTitle.textContent = card.getAttribute('data-title')
+            lightbox.classList.add('open')
+        })
+    })
+
+    lightbox.addEventListener('click', function () {
+        lightbox.classList.remove('open')
+    })
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') lightbox.classList.remove('open')
+    })
+</script>
+
+</body>
+</html>
