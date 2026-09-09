@@ -317,6 +317,25 @@
         padding: 56px 34px;
         text-align: center;
     }
+
+    .demo-frame {
+        max-width: 720px;
+        margin: 0 auto;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid rgba(150, 102, 255, 0.28);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 60px rgba(110, 60, 220, 0.12);
+        background: #0b0813;
+    }
+    .demo-frame iframe {
+        display: block;
+        width: 100%;
+        height: 960px;
+        border: none;
+    }
+    @media (max-width: 640px) {
+        .demo-frame iframe { height: 820px; }
+    }
     .download-cta h2 {
         font-size: clamp(26px, 4vw, 38px);
         font-weight: 800;
@@ -400,7 +419,7 @@
             Cozy Player
         </div>
         <div class="nav-links">
-            <a href="#showcase">Styles</a>
+            <a href="#showcase">Demo</a>
             <a href="#features">Features</a>
             <a href="#download">Download</a>
         </div>
@@ -429,40 +448,43 @@
 
     <section id="showcase">
         <div class="section-head">
-            <h2>Your Player. Your Style.</h2>
-            <p>From Minecraft blocks to DOOM fire – change the look anytime directly in the player.</p>
+            <h2>Cozy Player Demo</h2>
+            <p>Try the real player right here – fake songs, working controls, and all 13 styles to switch through.</p>
         </div>
-        <div class="showcase-grid">
+        <div class="demo-frame">
+            <iframe src="demo-player.html" title="Cozy Player Live Demo" loading="lazy"></iframe>
+        </div>
+        <div class="showcase-grid" style="margin-top:34px">
             <div class="shot-card" data-title="Classic">
-                <div class="img-wrap"><img src="classic.png" alt="Cozy Player in Classic Style"></div>
+                <div class="img-wrap"><img src="img/classic.png" alt="Cozy Player in Classic Style"></div>
                 <div class="shot-info">
                     <h3><span class="dot" style="background:#ff5d5d"></span>Classic</h3>
                     <p>The classic, elegant look with a red accent.</p>
                 </div>
             </div>
             <div class="shot-card" data-title="DOOM">
-                <div class="img-wrap"><img src="doom.png" alt="Cozy Player in DOOM Style"></div>
+                <div class="img-wrap"><img src="img/doom.png" alt="Cozy Player in DOOM Style"></div>
                 <div class="shot-info">
                     <h3><span class="dot" style="background:#ff7b1a"></span>DOOM</h3>
                     <p>Blazing fire, dark metallic – Rip and tear!</p>
                 </div>
             </div>
             <div class="shot-card" data-title="White PC">
-                <div class="img-wrap"><img src="white-pc.png" alt="Cozy Player in White PC Style"></div>
+                <div class="img-wrap"><img src="img/white-pc.png" alt="Cozy Player in White PC Style"></div>
                 <div class="shot-info">
                     <h3><span class="dot" style="background:#e8e8f0"></span>White PC</h3>
                     <p>Bright frosted glass design with soft RGB effects.</p>
                 </div>
             </div>
             <div class="shot-card" data-title="Resident Evil">
-                <div class="img-wrap"><img src="resident-evil.png" alt="Cozy Player in Resident Evil Style"></div>
+                <div class="img-wrap"><img src="img/resident-evil.png" alt="Cozy Player in Resident Evil Style"></div>
                 <div class="shot-info">
                     <h3><span class="dot" style="background:#3bb273"></span>Resident Evil</h3>
                     <p>Dark Umbrella look – Welcome to Raccoon City.</p>
                 </div>
             </div>
             <div class="shot-card" data-title="Ambient">
-                <div class="img-wrap"><img src="ambient.png" alt="Cozy Player in Ambient Style"></div>
+                <div class="img-wrap"><img src="img/ambient.png" alt="Cozy Player in Ambient Style"></div>
                 <div class="shot-info">
                     <h3><span class="dot" style="background:#a06bff"></span>Ambient</h3>
                     <p>Automatically adapts to the colors of your album cover – always in the right look.</p>
