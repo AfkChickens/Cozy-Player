@@ -1,0 +1,1603 @@
+
+:root {
+    --accent-color: #ff3b30;
+    --gradient-color: #644682;
+    --bg-opacity: 0.5;
+    --border-radius: 24px;
+    --scale: 1;
+    /* Ambient-Standardfarben (werden von den Cover-Farben überschrieben) */
+    --ambient-accent: #2dd6ff;
+    --ambient-c1: #0a1620;
+    --ambient-c2: #0f2a3a;
+    --ambient-glow: #2dd6ff;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: white;
+    user-select: none;
+    pointer-events: none;
+}
+
+.player-container {
+    position: absolute;
+    bottom: 28px;   /* = Glow-Abstand zum Fensterrand, gibt Außen-Leuchten Platz */
+    right: 28px;
+    transform: scale(var(--scale));
+    transform-origin: bottom right;
+    width: 336px;
+    height: 144px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 50%, var(--gradient-color) 100%),
+                rgba(45, 30, 60, var(--bg-opacity));
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    padding: 11px;
+    box-sizing: border-box;
+    gap: 13px;
+    transition: opacity 0.4s ease;
+    opacity: 1;
+    pointer-events: none;
+}
+
+.player-container.hidden-player {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cover-large {
+    width: 120px;
+    height: 120px;
+    border-radius: calc(var(--border-radius) - 8px);
+    background: #2a2a2a;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.text-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.title-area {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: 19px;
+}
+
+.title-area.has-marquee {
+    mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, transparent 100%);
+}
+
+.title-scroll-wrapper {
+    display: inline-block;
+    white-space: nowrap;
+    position: absolute;
+    left: 0;
+}
+
+.title-scroll-wrapper.animate {
+    animation: scrollText 7s ease-in-out infinite alternate;
+}
+
+@keyframes scrollText {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(var(--scroll-distance)); }
+}
+
+.title-area h1 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    display: block;
+    line-height: 19px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.text-container h2 {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 400;
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-right-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.symbol-icon {
+    font-size: 16px;
+    color: var(--accent-color);
+    line-height: 1;
+    text-shadow: 0 0 8px var(--accent-color);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.symbol-icon:hover {
+    transform: scale(1.25);
+    color: #ff5f5f;
+    text-shadow: 0 0 10px #ff5f5f;
+}
+
+.settings-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 26px; /* 2× größer */
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s, transform 0.2s;
+    pointer-events: auto;
+}
+
+.settings-btn:hover {
+    color: white;
+    transform: rotate(90deg);
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 2px 0;
+    pointer-events: auto;
+}
+
+.controls button {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    opacity: 0.9;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+    outline: none;
+    pointer-events: auto;
+}
+
+.controls button#play-pause-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.controls button:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.controls button:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.bottom-section {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.time-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+.progress-bar-container {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--accent-color);
+    border-radius: 2px;
+}
+
+.progress-handle {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    width: 9px;
+    height: 9px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+}
+
+/* =============================== Minecraft-Thema =============================== */
+body.mc-theme .player-container {
+    font-family: "Lucida Console", "Courier New", monospace;
+    /* Dirt/Boden-Textur wie ein Grass-Block */
+    background:
+        repeating-linear-gradient(45deg,
+            #79553a 0 6px, #6d4b34 6px 12px, #805b3d 12px 18px, #6d4b34 18px 24px),
+        #6d4b34;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
+    border: 3px solid #171717;
+    box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.18),
+                inset 0 -4px 0 rgba(0, 0, 0, 0.35),
+                0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Gras-Schicht oben, wie die Graskante eines Gras-Blocks in Minecraft */
+body.mc-theme .player-container::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    height: 18px;
+    background: repeating-linear-gradient(90deg,
+            #6dbd45 0 16px, #61ae3b 16px 32px, #6dbd45 32px 48px);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.35),
+                0 3px 0 rgba(0, 0, 0, 0.25);
+    /* gezackte Graskante als Blocküberhang */
+    clip-path: polygon(0 0, 100% 0, 100% 78%,
+        95% 100%, 90% 72%, 85% 100%, 80% 72%, 75% 100%, 70% 72%,
+        65% 100%, 60% 72%, 55% 100%, 50% 72%, 45% 100%, 40% 72%,
+        35% 100%, 30% 72%, 25% 100%, 20% 72%, 15% 100%, 10% 72%, 5% 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Grass liegt: über dem Hintergrund und über dem Cover-Bild, aber HINTER Text/Buttons/Timeline */
+body.mc-theme .cover-large {
+    position: relative;
+    z-index: 1;
+    border-radius: 0;
+    border: 3px solid #171717;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+                0 4px 8px rgba(0, 0, 0, 0.4);
+    image-rendering: pixelated;
+}
+
+body.mc-theme .right-panel {
+    position: relative;
+    z-index: 3;
+}
+
+body.mc-theme .title-area h1 {
+    font-family: inherit;
+    text-shadow: 2px 2px 0 #000;
+}
+
+body.mc-theme .text-container h2 {
+    font-family: inherit;
+    opacity: 1;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.mc-theme .symbol-icon {
+    text-shadow: 2px 2px 0 #000;
+}
+
+body.mc-theme .settings-btn {
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.mc-theme .controls button {
+    background: linear-gradient(#9b9b9b, #7d7d7d);
+    border: 2px solid #171717;
+    border-radius: 0;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+    font-family: inherit;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+body.mc-theme .controls button#play-pause-btn {
+    background: linear-gradient(#4a9148, #376f35);
+}
+
+body.mc-theme .controls button:hover {
+    background: linear-gradient(#ababab, #8d8d8d);
+    border-color: #fff;
+    transform: scale(1.08);
+}
+
+body.mc-theme .controls button:active {
+    transform: scale(0.92) translateY(1px);
+}
+
+body.mc-theme .controls button#play-pause-btn:hover {
+    background: linear-gradient(#5aa857, #479045);
+}
+
+body.mc-theme .time-info {
+    font-family: inherit;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.mc-theme .progress-bar-container {
+    height: 8px;
+    background: #3a3a3a;
+    border-radius: 0;
+    border: 2px solid #171717;
+    box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+body.mc-theme .progress-bar-fill {
+    border-radius: 0;
+    background: repeating-linear-gradient(90deg, #3cee37 0 6px, #52ff4b 6px 12px);
+}
+
+body.mc-theme .progress-handle {
+    border-radius: 0;
+    background: #fff;
+    border: 2px solid #171717;
+}
+
+/* =============================== Simple-Thema (minimalistisch) =============================== */
+body.simple-theme .player-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: rgba(247, 247, 249, 0.72);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border-radius: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+}
+
+body.simple-theme .cover-large {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+body.simple-theme .title-area h1 {
+    font-family: inherit;
+    color: #1c1c1e;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-shadow: none;
+}
+
+body.simple-theme .text-container h2 {
+    font-family: inherit;
+    color: #8e8e93;
+    opacity: 1;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-shadow: none;
+}
+
+body.simple-theme .symbol-icon {
+    color: #d1d1d6;
+    text-shadow: none;
+}
+
+body.simple-theme .settings-btn {
+    color: #8e8e93;
+    text-shadow: none;
+}
+
+body.simple-theme .settings-btn:hover {
+    color: #1c1c1e;
+}
+
+body.simple-theme .controls button {
+    font-family: inherit;
+    background: transparent;
+    color: #1c1c1e;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 50%;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+body.simple-theme .controls button#play-pause-btn {
+    background: #1c1c1e;
+    color: #fff;
+    border: none;
+}
+
+body.simple-theme .controls button:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+body.simple-theme .controls button#play-pause-btn:hover {
+    background: #000;
+}
+
+body.simple-theme .controls button:active {
+    transform: scale(0.92);
+    background: rgba(0, 0, 0, 0.12);
+}
+
+body.simple-theme .time-info {
+    font-family: inherit;
+    color: #8e8e93;
+    text-shadow: none;
+}
+
+body.simple-theme .progress-bar-container {
+    height: 3px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    border: none;
+    box-shadow: none;
+}
+
+body.simple-theme .progress-bar-fill {
+    border-radius: 2px;
+}
+
+body.simple-theme .progress-handle {
+    border-radius: 50%;
+    border: none;
+    background: #1c1c1e;
+}
+
+/* =============================== Subnautica-Thema (PDA-Hologramm) =============================== */
+body.subnautica-theme .player-container {
+    font-family: "Segoe UI", "Courier New", monospace;
+    background:
+        linear-gradient(90deg, rgba(0, 220, 255, 0.10) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(0deg, rgba(0, 220, 255, 0.10) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(160deg, rgba(6, 64, 78, 0.92), rgba(2, 22, 34, 0.95));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 210, 255, 0.6);
+    box-shadow: 0 0 18px rgba(0, 200, 255, 0.35),
+                inset 0 0 24px rgba(0, 200, 255, 0.18);
+}
+
+body.subnautica-theme .cover-large {
+    border-radius: 4px;
+    border: 2px solid rgba(0, 210, 255, 0.7);
+    box-shadow: 0 0 12px rgba(0, 200, 255, 0.4);
+}
+
+body.subnautica-theme .title-area h1 {
+    font-family: inherit;
+    color: #9ffcff;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(0, 220, 255, 0.9);
+}
+
+body.subnautica-theme .text-container h2 {
+    font-family: inherit;
+    color: #57cfe0;
+    opacity: 0.9;
+    text-shadow: 0 0 6px rgba(0, 220, 255, 0.5);
+}
+
+body.subnautica-theme .symbol-icon {
+    color: #00e0ff;
+    text-shadow: 0 0 10px rgba(0, 220, 255, 0.9);
+}
+
+body.subnautica-theme .settings-btn {
+    color: #7ce8f5;
+    text-shadow: 0 0 6px rgba(0, 220, 255, 0.6);
+}
+
+body.subnautica-theme .controls button {
+    font-family: inherit;
+    background: rgba(0, 200, 255, 0.12);
+    color: #9ffcff;
+    border: 1px solid rgba(0, 210, 255, 0.6);
+    border-radius: 0;
+    box-shadow: inset 0 0 8px rgba(0, 200, 255, 0.3);
+    text-shadow: 0 0 6px rgba(0, 220, 255, 0.8);
+}
+
+body.subnautica-theme .controls button#play-pause-btn {
+    background: rgba(0, 200, 255, 0.3);
+    border-color: rgba(0, 210, 255, 0.9);
+}
+
+body.subnautica-theme .controls button:hover {
+    background: rgba(0, 200, 255, 0.35);
+    border-color: #aefcff;
+    box-shadow: 0 0 12px rgba(0, 210, 255, 0.7);
+}
+
+body.subnautica-theme .controls button:active {
+    background: rgba(0, 200, 255, 0.45);
+}
+
+body.subnautica-theme .time-info {
+    font-family: inherit;
+    color: #7ce8f5;
+    text-shadow: 0 0 6px rgba(0, 220, 255, 0.5);
+}
+
+body.subnautica-theme .progress-bar-container {
+    height: 5px;
+    background: rgba(0, 210, 255, 0.2);
+    border-radius: 0;
+    border: 1px solid rgba(0, 210, 255, 0.4);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+body.subnautica-theme .progress-bar-fill {
+    border-radius: 0;
+    background: #00e0ff;
+    box-shadow: 0 0 8px #00e0ff;
+}
+
+body.subnautica-theme .progress-handle {
+    border-radius: 0;
+    background: #9ffcff;
+    border: 1px solid #00e0ff;
+    box-shadow: 0 0 8px #00e0ff;
+}
+
+/* =============================== DOOM-Thema =============================== */
+body.doom-theme .player-container {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+        radial-gradient(circle at 50% 110%, rgba(255, 120, 20, 0.28), transparent 60%),
+        linear-gradient(150deg, rgba(110, 20, 8, 0.88), rgba(60, 12, 6, 0.95) 40%, rgba(12, 10, 10, 0.97) 75%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
+    border: 2px solid #6a1508;
+    box-shadow: inset 0 0 0 1px #000,
+                inset 0 0 28px rgba(255, 120, 20, 0.28),
+                0 0 24px rgba(255, 80, 10, 0.35);
+}
+
+body.doom-theme .cover-large {
+    border-radius: 0;
+    border: 3px solid #1a0505;
+    box-shadow: inset 0 0 0 2px rgba(255, 60, 60, 0.35),
+                0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+body.doom-theme .title-area h1 {
+    font-family: "Impact", "Arial Black", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffb066;
+    text-shadow: 2px 2px 0 #000, 0 0 16px rgba(255, 130, 0, 0.9);
+}
+
+body.doom-theme .text-container h2 {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #ff9a4d;
+    opacity: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.doom-theme .symbol-icon {
+    color: #ff8c2d;
+    text-shadow: 0 0 10px #ff7b1d;
+}
+
+body.doom-theme .settings-btn {
+    color: #e8b9b9;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.doom-theme .controls button {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(#3a3a3a, #1c1c1c);
+    color: #ff9a4d;
+    border: 2px solid #171313;
+    border-radius: 0;
+    box-shadow: inset 0 2px 0 rgba(255, 150, 60, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.doom-theme .controls button#play-pause-btn {
+    background: linear-gradient(#ff8c1a, #b44005);
+    border-color: #5a1a00;
+    color: #fff;
+    text-shadow: 1px 1px 0 #3a1000;
+    box-shadow: 0 0 12px rgba(255, 130, 0, 0.6);
+}
+
+body.doom-theme .controls button:hover {
+    background: linear-gradient(#4a4a4a, #262626);
+    border-color: #ff8c2d;
+    box-shadow: 0 0 12px rgba(255, 130, 20, 0.6);
+}
+
+body.doom-theme .controls button:active {
+    transform: scale(0.92) translateY(1px);
+}
+
+body.doom-theme .time-info {
+    color: #ffb066;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.doom-theme .progress-bar-container {
+    height: 5px;
+    background: #141414;
+    border: 1px solid #000;
+    border-radius: 0;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+body.doom-theme .progress-bar-fill {
+    border-radius: 0;
+    background: linear-gradient(90deg, #ff5a1a, #ffb347);
+    box-shadow: 0 0 8px #ff8c1a;
+}
+
+body.doom-theme .progress-handle {
+    border-radius: 0;
+    background: #ffb347;
+    border: 1px solid #7a2000;
+    box-shadow: 0 0 6px #ff8c1a;
+}
+
+/* =============================== Discord-Thema =============================== */
+body.discord-theme .player-container {
+    font-family: "gg sans", "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(150deg, #2c2f33, #222428 60%, #1e2124);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 8px;
+    border: 1px solid #0f1114;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+body.discord-theme .cover-large {
+    border-radius: 8px;
+    border: 2px solid #14161a;
+    box-shadow: inset 0 0 0 2px rgba(114, 137, 218, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+body.discord-theme .title-area h1 {
+    font-family: "gg sans", "Segoe UI", Arial, sans-serif;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 1px 0 #000;
+}
+
+body.discord-theme .text-container h2 {
+    font-family: "gg sans", "Segoe UI", Arial, sans-serif;
+    color: #b9bbbe;
+    opacity: 1;
+    text-shadow: none;
+}
+
+body.discord-theme .symbol-icon {
+    color: #5865f2;
+    text-shadow: 0 0 8px rgba(88, 101, 242, 0.6);
+}
+
+body.discord-theme .settings-btn {
+    color: #dcddde;
+}
+
+body.discord-theme .controls button {
+    font-family: "gg sans", "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(#3a3d42, #313338);
+    color: #dcddde;
+    border: 1px solid #202225;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    font-weight: 600;
+}
+
+body.discord-theme .controls button#play-pause-btn {
+    background: linear-gradient(#6c7bf2, #5865f2);
+    border-color: #4150d8;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(88, 101, 242, 0.5);
+}
+
+body.discord-theme .controls button:hover {
+    background: linear-gradient(#454951, #3b3e44);
+    border-color: #5865f2;
+}
+
+body.discord-theme .controls button#play-pause-btn:hover {
+    background: linear-gradient(#7b89f4, #6673f3);
+}
+
+body.discord-theme .controls button:active {
+    transform: scale(0.94);
+}
+
+body.discord-theme .time-info {
+    color: #b9bbbe;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+body.discord-theme .progress-bar-container {
+    height: 4px;
+    background: #404249;
+    border: none;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.discord-theme .progress-bar-fill {
+    border-radius: 4px;
+    background: linear-gradient(90deg, #5865f2, #9b6cf2);
+    box-shadow: 0 0 6px rgba(88, 101, 242, 0.6);
+}
+
+body.discord-theme .progress-handle {
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #5865f2;
+}
+
+/* =============================== Counter-Strike 2-Thema (wie das CS2-Menü/GUI) =============================== */
+body.cs2-theme .player-container {
+    font-family: "Segoe UI", Arial, sans-serif;
+    /* typischer CS2-Hintergrund: dunkel mit hellem Radiallicht von oben */
+    background:
+        radial-gradient(120% 90% at 50% 0%, #39414a 0%, #22272c 45%, #121417 100%),
+        #121417;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 6px;
+    border: 1px solid #0a0c0f;
+    border-top: 2px solid #f1b82d;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 0 30px rgba(0, 0, 0, 0.45),
+                0 8px 22px rgba(0, 0, 0, 0.55);
+}
+
+body.cs2-theme .cover-large {
+    border-radius: 3px;
+    border: 2px solid #0a0c0f;
+    box-shadow: 0 0 0 1px rgba(241, 184, 45, 0.3) inset,
+                0 4px 10px rgba(0, 0, 0, 0.55);
+}
+
+body.cs2-theme .title-area h1 {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6), 0 0 10px rgba(241, 184, 45, 0.2);
+}
+
+body.cs2-theme .text-container h2 {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #b9c2cc;
+    opacity: 1;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+body.cs2-theme .symbol-icon {
+    color: #f1b82d;
+    text-shadow: 0 0 10px rgba(241, 184, 45, 0.7);
+}
+
+body.cs2-theme .settings-btn {
+    color: #aeb6bf;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Buttons wie im CS2-Menü: flache dunkle Panels mit gelber Markierung */
+body.cs2-theme .controls button {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(#2c3138, #1d2126);
+    color: #c8d0d9;
+    border: 1px solid #0c0e12;
+    border-bottom: 2px solid #f1b82d;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+body.cs2-theme .controls button#play-pause-btn {
+    background: linear-gradient(#f1b82d, #d99f1f);
+    color: #17191d;
+    border-color: #0c0e12;
+    border-bottom-color: #0c0e12;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 3px 6px rgba(0, 0, 0, 0.4);
+    text-shadow: none;
+}
+
+body.cs2-theme .controls button:hover {
+    background: linear-gradient(#3a4149, #272c32);
+    color: #f1b82d;
+    border-bottom-color: #f1b82d;
+}
+
+body.cs2-theme .controls button#play-pause-btn:hover {
+    background: linear-gradient(#ffcd3f, #e8ac23);
+}
+
+body.cs2-theme .controls button:active {
+    transform: scale(0.94);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.cs2-theme .time-info {
+    color: #aeb6bf;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+body.cs2-theme .progress-bar-container {
+    height: 6px;
+    background: #0e1013;
+    border-radius: 3px;
+    border: 1px solid #05070a;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+body.cs2-theme .progress-bar-fill {
+    border-radius: 3px;
+    background: linear-gradient(90deg, #f1b82d, #d99f1f);
+    box-shadow: 0 0 8px rgba(241, 184, 45, 0.6);
+}
+
+body.cs2-theme .progress-handle {
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #f1b82d;
+}
+
+/* =============================== Weißes RGB-PC-Thema (animiert) =============================== */
+/* Nur border-color animieren (Paint-Property). Das box-shadow NICHT animieren,
+   sonst pinnt Chromium die Ebene und der Fortschrittsbalken wird nicht mehr neu
+   gezeichnet (Timeline bleibt stehen). */
+@keyframes rgbGlow {
+    0%   { border-color: #ffffff; }
+    30%  { border-color: #eaf1ff; }
+    60%  { border-color: #cfe2ff; }
+    85%  { border-color: #eef4ff; }
+    100% { border-color: #ffffff; }
+}
+
+@keyframes rgbSlide {
+    0%   { background-position: 0% 0; }
+    100% { background-position: 300% 0; }
+}
+
+body.rgb-theme .player-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border-radius: 20px;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 24px rgba(190, 216, 255, 0.55);
+    animation: rgbGlow 3s linear infinite;
+}
+
+body.rgb-theme .cover-large {
+    border-radius: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+body.rgb-theme .title-area h1 {
+    font-family: inherit;
+    color: #1c1c1e;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-shadow: none;
+}
+
+body.rgb-theme .text-container h2 {
+    font-family: inherit;
+    color: #6e6e73;
+    opacity: 1;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-shadow: none;
+}
+
+body.rgb-theme .symbol-icon {
+    background: linear-gradient(90deg, #ffffff, #dce8ff, #eef4ff, #cfe2ff, #ffffff);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    animation: rgbSlide 3s linear infinite;
+    font-weight: bold;
+}
+
+body.rgb-theme .settings-btn {
+    color: #8e8e93;
+    text-shadow: none;
+}
+
+body.rgb-theme .settings-btn:hover {
+    color: #1c1c1e;
+}
+
+body.rgb-theme .controls button {
+    font-family: inherit;
+    background: #fff;
+    color: #1c1c1e;
+    border: 2px solid #e6e6ea;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    text-shadow: none;
+}
+
+body.rgb-theme .controls button#play-pause-btn {
+    background: linear-gradient(90deg, #ffffff, #dce8ff, #eef4ff, #cfe2ff, #ffffff);
+    background-size: 300% 100%;
+    color: #1c1c1e;
+    border: none;
+    animation: rgbSlide 3s linear infinite;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.rgb-theme .controls button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.18);
+}
+
+body.rgb-theme .controls button:active {
+    transform: scale(0.92);
+}
+
+body.rgb-theme .time-info {
+    color: #6e6e73;
+    font-weight: 600;
+    text-shadow: none;
+}
+
+body.rgb-theme .progress-bar-container {
+    height: 6px;
+    background: #ececf0;
+    border-radius: 3px;
+    border: none;
+    box-shadow: none;
+}
+
+body.rgb-theme .progress-bar-fill {
+    border-radius: 3px;
+    background: linear-gradient(90deg, #ffffff, #dce8ff, #eef4ff, #cfe2ff, #ffffff);
+    background-size: 300% 100%;
+    animation: rgbSlide 3s linear infinite;
+}
+
+body.rgb-theme .progress-handle {
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #cfe2ff;
+    box-shadow: 0 0 10px rgba(190, 216, 255, 0.6);
+}
+
+/* =============================== DOOM: aufsteigende Funken =============================== */
+/* Partikel statt Feuer: verglimmende Glut-Funken steigen auf und faden aus. */
+body.doom-theme .player-container::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: -1;
+    mix-blend-mode: screen;
+    background-image:
+        radial-gradient(circle, rgba(255, 190, 90, 0.9) 1.2px, transparent 1.8px),
+        radial-gradient(circle, rgba(255, 120, 40, 0.8) 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(255, 230, 170, 0.85) 0.8px, transparent 1.2px);
+    background-size: 55px 80px, 90px 120px, 130px 170px;
+    background-position: 0 8px, 0 4px, 0 2px;
+    animation: embersUp 1.4s linear infinite;
+}
+@keyframes embersUp {
+    0%   { background-position: 0 8px, 0 4px, 0 2px; opacity: 0.2; }
+    40%  { opacity: 0.9; }
+    100% { background-position: 0 -130px, 0 -180px, 0 -240px; opacity: 0; }
+}
+
+/* =============================== Subnautica 1: aufsteigende Blasen =============================== */
+body.subnautica-theme .player-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+        radial-gradient(circle, rgba(180, 240, 255, 0.55) 1.5px, transparent 2px),
+        radial-gradient(circle, rgba(150, 225, 255, 0.5) 2px, transparent 2.8px),
+        radial-gradient(circle, rgba(205, 250, 255, 0.5) 1px, transparent 1.6px);
+    background-size: 70px 110px, 110px 150px, 55px 130px;
+    background-position: 0 150px, 0 240px, 0 180px;
+    animation: bubblesUp 6s linear infinite;
+}
+@keyframes bubblesUp {
+    0%   { background-position: 0 150px, 0 240px, 0 180px; opacity: 0.45; }
+    25%  { opacity: 0.95; }
+    100% { background-position: 0 -110px, 0 -40px, 0 -150px; opacity: 0.45; }
+}
+
+/* =============================== Subnautica 2: Abgrund / Lichtstrahlen =============================== */
+/* Ein völlig anderes Design als das PDA-Hologramm: tiefe Ozean-Abgrund mit
+   einfallenden Lichtstrahlen und treibenden Plankton-Mikroben. */
+body.subnautica2-theme .player-container {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+        repeating-linear-gradient(115deg,
+            rgba(120, 220, 255, 0.05) 0 24px,
+            rgba(120, 220, 255, 0.13) 24px 30px,
+            transparent 30px 95px),
+        repeating-linear-gradient(115deg,
+            rgba(120, 220, 255, 0.03) 0 50px,
+            transparent 50px 120px),
+        linear-gradient(180deg, #0d2b40 0%, #08202f 45%, #041321 100%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 16px;
+    border: 1px solid rgba(40, 130, 180, 0.5);
+    box-shadow: inset 0 0 26px rgba(30, 140, 200, 0.18),
+                0 12px 30px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+}
+
+body.subnautica2-theme .player-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.55;
+    background-image:
+        radial-gradient(circle, rgba(140, 230, 255, 0.6) 1.5px, transparent 2px),
+        radial-gradient(circle, rgba(90, 190, 230, 0.5) 1px, transparent 1.6px),
+        radial-gradient(circle, rgba(210, 250, 255, 0.5) 2px, transparent 2.8px);
+    background-size: 90px 120px, 130px 200px, 70px 150px;
+    animation: oceanDrift 22s ease-in-out infinite;
+}
+@keyframes oceanDrift {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-16px); }
+    100% { transform: translateY(0); }
+}
+
+body.subnautica2-theme .cover-large {
+    /* rundes „Bullauge"/Porthole */
+    border-radius: 50%;
+    border: 2px solid rgba(120, 210, 250, 0.6);
+    box-shadow: 0 0 18px rgba(40, 160, 220, 0.5),
+                inset 0 0 16px rgba(255, 255, 255, 0.12);
+}
+
+body.subnautica2-theme .title-area h1 {
+    font-family: inherit;
+    color: #dff6ff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 12px rgba(80, 200, 255, 0.5);
+}
+
+body.subnautica2-theme .text-container h2 {
+    font-family: inherit;
+    color: #7fc8e6;
+    opacity: 1;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 8px rgba(60, 160, 220, 0.4);
+}
+
+body.subnautica2-theme .symbol-icon {
+    color: #9fe4ff;
+    text-shadow: 0 0 10px rgba(120, 220, 255, 0.8);
+}
+
+body.subnautica2-theme .settings-btn {
+    color: #7fc8e6;
+}
+
+body.subnautica2-theme .controls button {
+    font-family: inherit;
+    background: rgba(20, 80, 120, 0.35);
+    color: #dff6ff;
+    border: 1px solid rgba(120, 210, 250, 0.55);
+    border-radius: 50%;
+    box-shadow: inset 0 0 10px rgba(40, 160, 220, 0.35);
+    text-shadow: 0 0 6px rgba(120, 220, 255, 0.6);
+}
+
+body.subnautica2-theme .controls button#play-pause-btn {
+    background: rgba(30, 120, 180, 0.55);
+    border-color: rgba(160, 230, 255, 0.9);
+    box-shadow: 0 0 14px rgba(60, 180, 240, 0.6);
+}
+
+body.subnautica2-theme .controls button:hover {
+    background: rgba(40, 140, 200, 0.5);
+    border-color: #bfefff;
+}
+
+body.subnautica2-theme .time-info {
+    font-family: inherit;
+    color: #9fd7ef;
+    font-weight: 600;
+    text-shadow: 0 0 6px rgba(80, 190, 240, 0.4);
+}
+
+body.subnautica2-theme .progress-bar-container {
+    height: 5px;
+    background: rgba(30, 110, 160, 0.3);
+    border-radius: 3px;
+    border: 1px solid rgba(60, 160, 220, 0.35);
+    box-shadow: none;
+}
+
+body.subnautica2-theme .progress-bar-fill {
+    border-radius: 3px;
+    background: linear-gradient(90deg, #4ad2ff, #8ce4ff);
+    box-shadow: 0 0 10px rgba(74, 210, 255, 0.8);
+}
+
+body.subnautica2-theme .progress-handle {
+    border-radius: 50%;
+    background: #dff6ff;
+    border: 2px solid #4ad2ff;
+    box-shadow: 0 0 10px rgba(74, 210, 255, 0.8);
+}
+
+/* =============================== Rainbow (Regenbogen) =============================== */
+/* GTA-V/GTA-6-Ästhetik: violetter-pinker V-Logo-Verlauf, Gold-Akzente, Geldgrün des HUDs
+   und ein türkisfarbener VICE/GTA-6-Neon-Glint. */
+body.rainbow-theme .player-container {
+    font-family: "Arial Black", Impact, "Segoe UI", Arial, sans-serif;
+    background:
+        radial-gradient(130% 120% at 100% 0%, rgba(0, 229, 255, 0.16) 0%, transparent 42%),
+        radial-gradient(120% 140% at 0% 100%, rgba(255, 190, 45, 0.14) 0%, transparent 45%),
+        linear-gradient(150deg, #241040 0%, #6b1f9e 32%, #d92470 62%, #16081a 100%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 45, 130, 0.45);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55),
+                inset 0 0 30px rgba(92, 32, 139, 0.35);
+}
+
+/* Schmaler GTA-V-Logo-Verlaufsstreifen (Violett -> Pink -> Orange -> Türkis) */
+body.rainbow-theme .player-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #7a2cff, #ff3d6d 38%, #ffb02d 72%, #00e5ff);
+    z-index: 3;
+    pointer-events: none;
+}
+
+body.rainbow-theme .cover-large {
+    border-radius: 10px;
+    border: 2px solid rgba(255, 190, 45, 0.6);
+    box-shadow: 0 0 16px rgba(255, 176, 45, 0.4),
+                0 6px 14px rgba(0, 0, 0, 0.45);
+}
+
+body.rainbow-theme .title-area h1 {
+    font-family: inherit;
+    color: #fff;
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 45, 120, 0.6);
+}
+
+body.rainbow-theme .text-container h2 {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #ffd27f;
+    opacity: 1;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+body.rainbow-theme .symbol-icon {
+    color: transparent;
+    background: linear-gradient(180deg, #ffb02d, #ff3d6d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    font-weight: bold;
+    text-shadow: none;
+}
+
+body.rainbow-theme .settings-btn {
+    color: #f4d9e6;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+body.rainbow-theme .controls button {
+    font-family: "Arial Black", "Segoe UI", Arial, sans-serif;
+    background: rgba(20, 10, 30, 0.45);
+    color: #ffb3d1;
+    border: 1px solid rgba(255, 61, 109, 0.7);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.08),
+                0 2px 6px rgba(0, 0, 0, 0.4);
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.rainbow-theme .controls button#play-pause-btn {
+    background: linear-gradient(180deg, #3fd67a, #1f9c52);   /* Geldgrün wie im GTA-HUD */
+    color: #062812;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 14px rgba(63, 214, 122, 0.6);
+    text-shadow: none;
+}
+
+body.rainbow-theme .controls button:hover {
+    color: #00e5ff;
+    border-color: #00e5ff;
+    background: rgba(30, 40, 50, 0.55);
+}
+
+body.rainbow-theme .controls button#play-pause-btn:hover {
+    background: linear-gradient(180deg, #4fe88b, #27b45f);
+    color: #062812;
+}
+
+body.rainbow-theme .controls button:active {
+    transform: scale(0.92);
+}
+
+body.rainbow-theme .time-info {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #ffd9ec;
+    font-weight: 600;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.rainbow-theme .progress-bar-container {
+    height: 6px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 61, 109, 0.4);
+    border-radius: 3px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+body.rainbow-theme .progress-bar-fill {
+    border-radius: 3px;
+    background: linear-gradient(90deg, #7a2cff, #ff3d6d, #ffb02d, #00e5ff);
+    box-shadow: 0 0 10px rgba(255, 61, 109, 0.7);
+}
+
+body.rainbow-theme .progress-handle {
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #ffb02d;
+    box-shadow: 0 0 8px rgba(255, 176, 45, 0.8);
+}
+
+/* =============================== Ambient (passt sich den Cover-Farben an) =============================== */
+/* Die CSS-Variablen --ambient-* werden aus dem Album-Cover berechnet (siehe JS). */
+body.ambient-theme .player-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background:
+        radial-gradient(120% 120% at 20% 0%, var(--ambient-c1), transparent 60%),
+        linear-gradient(160deg, var(--ambient-c1), var(--ambient-c2));
+    backdrop-filter: blur(30px) saturate(160%);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--ambient-accent) 45%, transparent);
+    box-shadow: 0 0 26px color-mix(in srgb, var(--ambient-glow) 55%, transparent),
+                0 10px 26px rgba(0, 0, 0, 0.4);
+}
+
+body.ambient-theme .cover-large {
+    border-radius: 13px;
+    border: 2px solid color-mix(in srgb, var(--ambient-accent) 70%, #fff 10%);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--ambient-glow) 60%, transparent);
+}
+
+body.ambient-theme .title-area h1 {
+    font-family: inherit;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.ambient-theme .text-container h2 {
+    font-family: inherit;
+    color: color-mix(in srgb, var(--ambient-accent) 55%, #fff 30%);
+    opacity: 1;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.ambient-theme .symbol-icon {
+    color: var(--ambient-accent);
+    text-shadow: 0 0 10px var(--ambient-glow);
+}
+
+body.ambient-theme .settings-btn {
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: none;
+}
+
+body.ambient-theme .controls button {
+    font-family: inherit;
+    background: color-mix(in srgb, var(--ambient-c2) 55%, transparent);
+    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--ambient-accent) 55%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--ambient-glow) 40%, transparent);
+    text-shadow: none;
+}
+
+body.ambient-theme .controls button#play-pause-btn {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--ambient-accent) 80%, #fff 20%), var(--ambient-accent));
+    border: 1px solid color-mix(in srgb, var(--ambient-accent) 90%, #fff 10%);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--ambient-glow) 60%, transparent);
+}
+
+body.ambient-theme .controls button:hover {
+    background: color-mix(in srgb, var(--ambient-accent) 30%, var(--ambient-c2) 60%);
+    border-color: var(--ambient-accent);
+}
+
+body.ambient-theme .time-info {
+    font-family: inherit;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
+    text-shadow: none;
+}
+
+body.ambient-theme .progress-bar-container {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    border: none;
+    box-shadow: none;
+}
+
+body.ambient-theme .progress-bar-fill {
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--ambient-accent), var(--ambient-glow));
+    box-shadow: 0 0 8px var(--ambient-glow);
+}
+
+body.ambient-theme .progress-handle {
+    border-radius: 50%;
+    background: var(--ambient-accent);
+    border: 2px solid #fff;
+    box-shadow: 0 0 8px var(--ambient-glow);
+}
+
+/* Sanfter Übergang, wenn sich die Ambient-Farben ändern (z. B. Ambient-Game) */
+body.ambient-theme .player-container {
+    transition: background 0.7s ease, border-color 0.7s ease, box-shadow 0.7s ease;
+}
+body.ambient-theme .cover-large {
+    transition: border-color 0.7s ease, box-shadow 0.7s ease;
+}
+body.ambient-theme .title-area h1,
+body.ambient-theme .time-info,
+body.ambient-theme .settings-btn {
+    transition: color 0.7s ease, text-shadow 0.7s ease;
+}
+body.ambient-theme .text-container h2 {
+    transition: color 0.7s ease;
+}
+body.ambient-theme .symbol-icon {
+    transition: color 0.7s ease, text-shadow 0.7s ease;
+}
+body.ambient-theme .controls button {
+    transition: background 0.7s ease, border-color 0.7s ease, color 0.7s ease, box-shadow 0.7s ease, transform 0.2s ease;
+}
+body.ambient-theme .progress-bar-fill,
+body.ambient-theme .progress-handle {
+    transition: background 0.7s ease, box-shadow 0.7s ease, border-color 0.7s ease;
+}
+
+/* =============================== Resident Evil =============================== */
+/* Düster-horroriger Look: fast Schwarz mit rotem Blut-Hauch und Umbrella-Grün,
+   rot-weißer Biohazard-Warnstreifen oben. */
+body.re-theme .player-container {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+        radial-gradient(100% 110% at 80% 0%, rgba(40, 150, 90, 0.14) 0%, transparent 45%),
+        radial-gradient(120% 120% at 0% 100%, rgba(160, 10, 30, 0.3) 0%, transparent 50%),
+        linear-gradient(180deg, #18171b, #0c0b0e);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 4px;
+    border: 1px solid #3a3a40;
+    box-shadow: inset 0 0 0 1px rgba(200, 16, 46, 0.15),
+                inset 0 0 30px rgba(0, 0, 0, 0.7),
+                0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+/* Biohazard-Warnstreifen oben */
+body.re-theme .player-container::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(90deg,
+        #c8102e 0 14px, rgba(200, 16, 46, 0.4) 14px 16px);
+    z-index: 3;
+    pointer-events: none;
+}
+
+body.re-theme .cover-large {
+    border-radius: 4px;
+    border: 2px solid #2b2b31;
+    box-shadow: inset 0 0 0 1px rgba(200, 16, 46, 0.35),
+                0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+body.re-theme .title-area h1 {
+    font-family: inherit;
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    text-shadow: 2px 2px 0 #000, 0 0 10px rgba(200, 16, 46, 0.55);
+}
+
+body.re-theme .text-container h2 {
+    font-family: inherit;
+    color: #c9c2b5;
+    opacity: 1;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 0 #000;
+}
+
+body.re-theme .symbol-icon {
+    color: #e03131;
+    text-shadow: 0 0 10px rgba(200, 16, 46, 0.8);
+}
+
+body.re-theme .settings-btn {
+    color: #9a9487;
+}
+
+body.re-theme .controls button {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(#232329, #15151a);
+    color: #e03131;
+    border: 1px solid #2b2b31;
+    border-radius: 4px;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.07),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.6);
+}
+
+body.re-theme .controls button#play-pause-btn {
+    background: linear-gradient(#1f9c52, #0f6b33);   /* Umbrella-Grün */
+    color: #fff;
+    border: 1px solid #0a3a1e;
+    box-shadow: 0 0 14px rgba(31, 156, 82, 0.55);
+}
+
+body.re-theme .controls button:hover {
+    border-color: #e03131;
+    color: #ff6a6a;
+    background: linear-gradient(#2a2a31, #1a1a20);
+}
+
+body.re-theme .controls button#play-pause-btn:hover {
+    background: linear-gradient(#25b05c, #127a3a);
+    color: #fff;
+}
+
+body.re-theme .controls button:active {
+    transform: scale(0.92);
+}
+
+body.re-theme .time-info {
+    font-family: inherit;
+    color: #c9c2b5;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+body.re-theme .progress-bar-container {
+    height: 5px;
+    background: #1a1a1f;
+    border: 1px solid #000;
+    border-radius: 2px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+body.re-theme .progress-bar-fill {
+    border-radius: 2px;
+    background: linear-gradient(90deg, #c8102e, #e03131);
+    box-shadow: 0 0 8px rgba(200, 16, 46, 0.6);
+}
+
+body.re-theme .progress-handle {
+    border-radius: 50%;
+    background: #3bb273;
+    border: 2px solid #0a3a1e;
+    box-shadow: 0 0 8px rgba(59, 178, 115, 0.7);
+}

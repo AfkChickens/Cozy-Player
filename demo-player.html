@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozy Player – Live Demo</title>
+<link rel="stylesheet" href="cozy-player.css">
+<style>
+    /* ===== Demo-Overrides: Browser statt Electron ===== */
+    html, body {
+        pointer-events: auto;
+        overflow: auto;
+        background: #0b0813;
+        height: auto;
+        min-height: 100vh;
+        color: #f2eefb;
+        /* Kein weißer Scrollbalken: Scrollbar ausblenden, Inhalt passt in 100vh */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+    /* Coole Custom-Maus: lila Musiknote mit Glow-Ring */
+    body {
+        cursor: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2214%22%20fill%3D%22%236b34d9%22%20opacity%3D%220.30%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2211%22%20fill%3D%22none%22%20stroke%3D%22%23b18cff%22%20stroke-width%3D%221.4%22%2F%3E%3Cg%20fill%3D%22%23ffffff%22%20stroke%3D%22%234b2296%22%20stroke-width%3D%220.8%22%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%2223%22%20rx%3D%224.4%22%20ry%3D%223.1%22%20transform%3D%22rotate(-22%2012%2023)%22%2F%3E%3Crect%20x%3D%2215.5%22%20y%3D%227%22%20width%3D%222.5%22%20height%3D%2216%22%20rx%3D%221.2%22%2F%3E%3Cpath%20d%3D%22M18%207%20C%2021.5%208.5%2C%2023.5%2012%2C%2023%2016%20C%2024%2013.5%2C%2023%2010%2C%2018%209.2%20Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") 15 6, auto;
+    }
+    .stage.ag-active {
+        cursor: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2236%22%20height%3D%2236%22%20viewBox%3D%220%200%2036%2036%22%3E%3Ccircle%20cx%3D%2218%22%20cy%3D%2218%22%20r%3D%227%22%20fill%3D%22none%22%20stroke%3D%22%232dd6ff%22%20stroke-width%3D%221.8%22%2F%3E%3Cline%20x1%3D%2218%22%20y1%3D%221%22%20x2%3D%2218%22%20y2%3D%229%22%20stroke%3D%22%232dd6ff%22%20stroke-width%3D%221.8%22%2F%3E%3Cline%20x1%3D%2218%22%20y1%3D%2227%22%20x2%3D%2218%22%20y2%3D%2235%22%20stroke%3D%22%232dd6ff%22%20stroke-width%3D%221.8%22%2F%3E%3Cline%20x1%3D%221%22%20y1%3D%2218%22%20x2%3D%229%22%20y2%3D%2218%22%20stroke%3D%22%232dd6ff%22%20stroke-width%3D%221.8%22%2F%3E%3Cline%20x1%3D%2227%22%20y1%3D%2218%22%20x2%3D%2235%22%20y2%3D%2218%22%20stroke%3D%22%232dd6ff%22%20stroke-width%3D%221.8%22%2F%3E%3Ccircle%20cx%3D%2218%22%20cy%3D%2218%22%20r%3D%221.6%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E") 18 18, crosshair;
+    }
+    #fake-screen { cursor: inherit; }
+
+    .demo-wrap {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 34px 20px 60px;
+        box-sizing: border-box;
+        position: relative;
+    }
+
+    .demo-header { text-align: center; margin-bottom: 26px; }
+    .demo-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.5px;
+        background: linear-gradient(90deg, #fff 20%, #c9a8ff 60%, #9666ff 90%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .demo-header p { color: #a89fc0; margin: 6px 0 0; font-size: 14px; }
+
+    /* Bühne: hier sitzt der Player (zentriert) + der Fake-Screen für Ambient Game */
+    .stage {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+        height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 24px;
+        overflow: hidden;
+        background:
+            radial-gradient(120% 120% at 50% 0%, rgba(150,102,255,0.12), transparent 60%),
+            #0e0a18;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+        margin-bottom: 26px;
+    }
+    /* Fake-Desktop für den Ambient-Game-Modus (animierter Farbverlauf) */
+    #fake-screen {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        cursor: inherit;
+    }
+    .stage.ag-active #fake-screen { display: block; }
+
+    /* Player im Demo zentrieren (statt bottom-right), 2× so groß wie die App */
+    #player-box {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        transform-origin: center;
+        transform: scale(1.2);
+        z-index: 2;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Theme-Auswahl */
+    .picker-label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #a89fc0;
+        margin-bottom: 12px;
+    }
+    .theme-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        max-width: 640px;
+        margin-bottom: 30px;
+    }
+    .theme-picker button {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #ddd6ee;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    .theme-picker button:hover {
+        background: rgba(150,102,255,0.18);
+        border-color: rgba(150,102,255,0.55);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+    .theme-picker button.active {
+        background: linear-gradient(135deg, #9666ff, #6b34d9);
+        border-color: transparent;
+        color: #fff;
+        font-weight: 700;
+        box-shadow: 0 6px 18px rgba(110,60,220,0.45);
+    }
+
+    /* Fake-Playlist */
+    .playlist {
+        width: 100%;
+        max-width: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 26px;
+        max-height: 176px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+    .playlist::-webkit-scrollbar { width: 8px; }
+    .playlist::-webkit-scrollbar-thumb { background: rgba(150,102,255,0.35); border-radius: 4px; }
+    .song {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+        color: #f2eefb;
+        font-family: inherit;
+        width: 100%;
+    }
+    .song:hover { background: rgba(150,102,255,0.12); border-color: rgba(150,102,255,0.4); transform: translateX(3px); }
+    .song.playing { border-color: rgba(150,102,255,0.7); background: rgba(150,102,255,0.14); }
+    .song img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+    .song .s-info { flex: 1; min-width: 0; }
+    .song .s-info b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .song .s-info span { font-size: 12px; color: #a89fc0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .song .s-dur { font-size: 12px; color: #8a80a6; font-variant-numeric: tabular-nums; }
+
+    /* Style-Auswahl-Panel (⚙ im Player) – nur Styles, keine anderen Settings */
+    .demo-settings {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #171226;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 18px;
+        padding: 20px;
+        z-index: 50;
+        width: 300px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+        display: none;
+    }
+    .demo-settings.open { display: block; }
+    .demo-settings h3 { margin: 0 0 14px; font-size: 15px; }
+    .demo-settings .style-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .demo-settings .style-grid button {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #ddd6ee;
+        padding: 9px 8px;
+        border-radius: 10px;
+        font-size: 12.5px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+        text-align: center;
+    }
+    .demo-settings .style-grid button:hover {
+        background: rgba(150,102,255,0.18);
+        border-color: rgba(150,102,255,0.55);
+        color: #fff;
+    }
+    .demo-settings .style-grid button.active {
+        background: linear-gradient(135deg, #9666ff, #6b34d9);
+        border-color: transparent;
+        color: #fff;
+        font-weight: 700;
+    }
+    .demo-settings .close-set {
+        margin-top: 14px;
+        width: 100%;
+        padding: 9px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .demo-settings .close-set:hover { background: rgba(255,255,255,0.12); }
+    .demo-overlay {
+        position: fixed; inset: 0; background: rgba(4,2,10,0.55); z-index: 40; display: none;
+    }
+    .demo-overlay.open { display: block; }
+
+    .hint {
+        font-size: 12.5px;
+        color: #8a80a6;
+        text-align: center;
+        max-width: 480px;
+        line-height: 1.5;
+    }
+    .hint code { background: rgba(255,255,255,0.08); padding: 2px 7px; border-radius: 6px; color: #cfe8ff; }
+</style>
+</head>
+<body>
+
+<div class="demo-wrap">
+    <div class="demo-header">
+        <h1>Cozy Player – Live Demo</h1>
+        <p>Fake songs, real features – hit play and switch styles below.</p>
+    </div>
+
+    <div class="stage" id="stage">
+        <canvas id="fake-screen"></canvas>
+
+        <div class="player-container" id="player-box">
+            <img id="cover-large" class="cover-large" alt="Cover">
+            <div class="right-panel">
+                <div class="top-section">
+                    <div class="text-container">
+                        <div class="title-area" id="title-area-box">
+                            <div class="title-scroll-wrapper" id="scroll-wrapper">
+                                <h1 id="song-title">Cozy Player Demo</h1>
+                            </div>
+                        </div>
+                        <h2 id="song-artist">Press Play ▶</h2>
+                    </div>
+                    <div class="top-right-col">
+                        <div class="symbol-icon" onclick="demoQuit()" title="In the app: quits Cozy Player">◈</div>
+                        <button class="settings-btn" onclick="openDemoSettings()" title="Settings">⚙</button>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button onclick="mediaControl('prev')" title="Previous Track">◄</button>
+                    <button id="play-pause-btn" title="Play / Pause" onclick="mediaControl('playpause')">▶</button>
+                    <button onclick="mediaControl('next')" title="Next Track">►</button>
+                </div>
+
+                <div class="bottom-section">
+                    <div class="time-info">
+                        <span id="time-current">00:00</span>
+                        <span id="time-total">00:00</span>
+                    </div>
+                    <div class="progress-bar-container" id="progress-bar-container" style="cursor:pointer">
+                        <div id="progress-fill" class="progress-bar-fill"></div>
+                        <div id="progress-handle" class="progress-handle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="picker-label">🎨 Switch Style</div>
+    <div class="theme-picker" id="theme-picker"></div>
+
+    <div class="picker-label">🎵 Fake Playlist (click to play)</div>
+    <div class="playlist" id="playlist"></div>
+
+    <p class="hint">
+        Tip: Click <code>⚙</code> in the player to try all 13 styles.
+        The <code>Ambient</code> style takes its colors from the album cover, and
+        <code>Ambient Game</code> simulates the screen scanner – move your mouse over the stage above.
+        Every style has its own click sound 🔊
+    </p>
+</div>
+
+<div class="demo-overlay" id="demo-overlay" onclick="closeDemoSettings()"></div>
+<div class="demo-settings" id="demo-settings">
+    <h3>🎨 Choose Style</h3>
+    <div class="style-grid" id="style-grid"></div>
+    <button class="close-set" onclick="closeDemoSettings()">Done</button>
+</div>
+
+<script>
+// ============================================================
+//  Demo-Daten: Fake-Songs mit generierten SVG-Covers
+// ============================================================
+function makeCover(c1, c2, glyph) {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'>
+        <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
+        </linearGradient></defs>
+        <rect width='240' height='240' fill='url(#g)'/>
+        <circle cx='120' cy='120' r='70' fill='rgba(255,255,255,0.12)'/>
+        <text x='120' y='150' font-size='95' text-anchor='middle' fill='rgba(255,255,255,0.88)' font-family='Arial'>${glyph}</text>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+const FAKE_TRACKS = [
+    { title: 'Neon Nights',     artist: 'Synthwave Kids',  c1: '#ff3d6d', c2: '#7a2cff', cover: makeCover('#ff3d6d', '#7a2cff', '♪'), durationMs: 214000 },
+    { title: 'Pixel Dreams',    artist: 'Byte Runner',     c1: '#2dd6ff', c2: '#1a3f8f', cover: makeCover('#2dd6ff', '#1a3f8f', '◈'), durationMs: 183000 },
+    { title: 'Grass Block Groove', artist: 'Craft Beats',  c1: '#6dbd45', c2: '#3a6b2a', cover: makeCover('#6dbd45', '#3a6b2a', '♫'), durationMs: 156000 },
+    { title: 'Hell March',      artist: 'Doom Patrol',     c1: '#ff7b1a', c2: '#5a0a00', cover: makeCover('#ff7b1a', '#5a0a00', '☠'), durationMs: 197000 },
+    { title: 'Deep Ocean',      artist: 'Leviathan',       c1: '#0d5a7a', c2: '#041321', cover: makeCover('#0d5a7a', '#041321', '〰'), durationMs: 262000 },
+    { title: 'White Noise',     artist: 'RGB & Co',        c1: '#ffffff', c2: '#cfe2ff', cover: makeCover('#ffffff', '#cfe2ff', '✦'), durationMs: 174000 },
+    { title: 'Rainbow Road',    artist: 'Vice City FM',    c1: '#ff3d6d', c2: '#00e5ff', cover: makeCover('#ff3d6d', '#00e5ff', '★'), durationMs: 231000 },
+    { title: 'Umbrella Rain',   artist: 'Raccoon City',    c1: '#c8102e', c2: '#0c0b0e', cover: makeCover('#c8102e', '#0c0b0e', '☣'), durationMs: 205000 },
+    { title: 'Discord Dungeon', artist: 'Server Room',     c1: '#5865f2', c2: '#1e2124', cover: makeCover('#5865f2', '#1e2124', '⚡'), durationMs: 168000 },
+    { title: 'Simple Day',      artist: 'Minimal Beats',   c1: '#f2f2f4', c2: '#c9c9d2', cover: makeCover('#f2f2f4', '#c9c9d2', '♪'), durationMs: 145000 },
+];
+
+// ============================================================
+//  State & Timeline (Logik wie in der echten App, ohne Electron)
+// ============================================================
+let currentTheme = 'ambient';
+let soundsEnabled = true;
+let trackIdx = 0;
+let playing = false;
+let baseProg = 0;
+let baseAt = Date.now();
+let dur = FAKE_TRACKS[0].durationMs;
+let uiIsPlaying = false;
+let audioCtx = null;
+let lastToggleAt = 0;
+
+function formatTime(ms) {
+    if (!ms || isNaN(ms) || ms < 0) return '00:00';
+    const total = Math.floor(ms / 1000);
+    const m = Math.floor(total / 60);
+    const sec = total % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+function localProg() {
+    if (dur <= 0) return 0;
+    let p = baseProg + (playing ? (Date.now() - baseAt) : 0);
+    if (p < 0) p = 0;
+    if (p > dur) p = dur;
+    return p;
+}
+function rebase(p) { baseProg = p; baseAt = Date.now(); }
+
+function updateProgress() {
+    const fill = document.getElementById('progress-fill');
+    const handle = document.getElementById('progress-handle');
+    const timeCur = document.getElementById('time-current');
+    const ms = localProg();
+    const pct = dur > 0 ? Math.min(100, Math.max(0, (ms / dur) * 100)) : 0;
+    fill.style.width = pct + '%';
+    handle.style.left = pct + '%';
+    timeCur.innerText = formatTime(ms);
+
+    // Song automatisch weiterblättern
+    if (playing && ms >= dur - 50) {
+        nextTrack(false);
+    }
+}
+function animateProgress() { updateProgress(); requestAnimationFrame(animateProgress); }
+
+// ============================================================
+//  Klick-Sounds (exakt wie in der App, pro Theme)
+// ============================================================
+function playClick() {
+    if (!soundsEnabled) return;
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const tone = (type, f0, f1, peak, dur_) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = type;
+            o.frequency.setValueAtTime(f0, now);
+            if (f1) o.frequency.exponentialRampToValueAtTime(f1, now + dur_);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.exponentialRampToValueAtTime(peak, now + 0.008);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur_);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(now); o.stop(now + dur_ + 0.02);
+        };
+        switch (currentTheme) {
+            case 'minecraft': {
+                const m1 = audioCtx.createOscillator(), mg1 = audioCtx.createGain();
+                m1.type = 'sine';
+                m1.frequency.setValueAtTime(1700, now);
+                m1.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                mg1.gain.setValueAtTime(0.0001, now);
+                mg1.gain.exponentialRampToValueAtTime(0.3, now + 0.005);
+                mg1.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                m1.connect(mg1); mg1.connect(audioCtx.destination);
+                m1.start(now); m1.stop(now + 0.07);
+                const m2 = audioCtx.createOscillator(), mg2 = audioCtx.createGain();
+                m2.type = 'square';
+                m2.frequency.setValueAtTime(220, now);
+                mg2.gain.setValueAtTime(0.0001, now);
+                mg2.gain.exponentialRampToValueAtTime(0.1, now + 0.004);
+                mg2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                m2.connect(mg2); mg2.connect(audioCtx.destination);
+                m2.start(now); m2.stop(now + 0.07);
+                break;
+            }
+            case 'subnautica': tone('sine', 820, 1500, 0.14, 0.08); break;
+            case 'doom':       tone('sine', 95, 60, 0.35, 0.15); break;
+            case 'cs2':        tone('square', 1300, 900, 0.11, 0.05); tone('square', 1700, 1200, 0.09, 0.04); break;
+            case 'rgb':        tone('sine', 700, 950, 0.09, 0.07); break;
+            case 'rainbow':    tone('sawtooth', 220, 120, 0.18, 0.12); break;
+            case 're':         tone('sine', 90, 50, 0.32, 0.16); break;
+            case 'discord':    tone('triangle', 620, 880, 0.1, 0.07); tone('sine', 1240, 1560, 0.08, 0.05); break;
+            case 'simple':     tone('sine', 560, 520, 0.08, 0.06); break;
+            default:           tone('sine', 420, 380, 0.12, 0.08); break;
+        }
+    } catch (e) {}
+}
+
+// ============================================================
+//  Media-Controls (lokal statt IPC)
+// ============================================================
+function setPlayIcon() {
+    document.getElementById('play-pause-btn').innerText = uiIsPlaying ? '❚❚' : '▶';
+}
+
+function loadTrack(i, autoplay) {
+    trackIdx = (i + FAKE_TRACKS.length) % FAKE_TRACKS.length;
+    const t = FAKE_TRACKS[trackIdx];
+    baseProg = 0;
+    dur = t.durationMs;
+    playing = !!autoplay;
+    uiIsPlaying = playing;
+    rebase(0);
+    setPlayIcon();
+    document.getElementById('song-title').innerText = t.title;
+    document.getElementById('song-artist').innerText = t.artist;
+    document.getElementById('cover-large').src = t.cover;
+    document.getElementById('time-total').innerText = formatTime(dur);
+    if (currentTheme === 'ambient') applyAmbientFromColors(t.c1, t.c2);
+    markPlaying();
+    setTitleMarquee(t.title);
+}
+
+function mediaControl(action) {
+    if (action === 'playpause') {
+        const now = Date.now();
+        if (now - lastToggleAt < 350) return;
+        lastToggleAt = now;
+        playClick();
+        const newPlaying = !uiIsPlaying;
+        uiIsPlaying = newPlaying;
+        playing = newPlaying;
+        rebase(localProg());
+        setPlayIcon();
+        if (!newPlaying && localProg() >= dur - 50) { /* nichts */ }
+        return;
+    }
+    playClick();
+    if (action === 'next') { nextTrack(true); }
+    if (action === 'prev') {
+        if (localProg() > 3000) { rebase(0); }   // innerhalb der ersten 3 s -> Track-Anfang
+        else { nextTrack(-1); }                  // sonst vorheriger Song
+    }
+}
+
+function nextTrack(dir) {
+    loadTrack(dir === -1 ? trackIdx - 1 : trackIdx + 1, true);
+    playClick();
+}
+
+function demoQuit() {
+    playClick();
+    playing = false;
+    uiIsPlaying = false;
+    setPlayIcon();
+}
+
+// ============================================================
+//  Titel-Marquee (wie in der App)
+// ============================================================
+let lastTitle = '';
+function setTitleMarquee(text) {
+    if (text === lastTitle) return;
+    lastTitle = text;
+    const titleEl = document.getElementById('song-title');
+    const wrapper = document.getElementById('scroll-wrapper');
+    const box = document.getElementById('title-area-box');
+    titleEl.innerText = text;
+    setTimeout(() => {
+        const textWidth = titleEl.offsetWidth;
+        const parentWidth = box.offsetWidth;
+        if (textWidth > parentWidth) {
+            const distance = textWidth - parentWidth + 15;
+            wrapper.style.setProperty('--scroll-distance', '-' + distance + 'px');
+            wrapper.classList.add('animate');
+            box.classList.add('has-marquee');
+        } else {
+            wrapper.classList.remove('animate');
+            box.classList.remove('has-marquee');
+            wrapper.style.transform = 'translateX(0)';
+        }
+    }, 50);
+}
+
+// ============================================================
+//  Ambient: Farben aus dem Cover (wie in der App)
+// ============================================================
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    let h = 0; const l = (mx + mn) / 2; const d = mx - mn;
+    if (d) {
+        const s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+        if (mx === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (mx === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h *= 60;
+        return { h2: (h + 360) % 360, s, l };
+    }
+    return { h2: 0, s: 0, l };
+}
+function hslToCss(h, s, l) {
+    return 'hsl(' + Math.round(((h % 360) + 360) % 360) + ', ' + Math.round(Math.max(0, Math.min(s, 1)) * 100) + '%, ' + Math.round(Math.max(0, Math.min(l, 1)) * 100) + '%)';
+}
+function setAmbientVars(acc, c1, c2, gl) {
+    const root = document.documentElement;
+    root.style.setProperty('--ambient-accent', acc);
+    root.style.setProperty('--ambient-c1', c1);
+    root.style.setProperty('--ambient-c2', c2);
+    root.style.setProperty('--ambient-glow', gl);
+}
+function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    return { r: parseInt(h.substr(0, 2), 16), g: parseInt(h.substr(2, 2), 16), b: parseInt(h.substr(4, 2), 16) };
+}
+function saturation(rgb) {
+    const mx = Math.max(rgb.r, rgb.g, rgb.b);
+    const mn = Math.min(rgb.r, rgb.g, rgb.b);
+    return mx === 0 ? 0 : (mx - mn) / mx;
+}
+// Ambient-Farben direkt aus den bekannten Cover-Farben berechnen (deterministisch,
+// kein Canvas/getImageData → funktioniert in jedem Browser und mit GitHub Pages).
+function applyAmbientFromColors(c1hex, c2hex) {
+    try {
+        const c1 = hexToRgb(c1hex), c2 = hexToRgb(c2hex);
+        // Durchschnitt beider Farben + die kräftigere (sattere) als Akzent
+        const avg = rgbToHsl(
+            Math.round((c1.r + c2.r) / 2),
+            Math.round((c1.g + c2.g) / 2),
+            Math.round((c1.b + c2.b) / 2)
+        );
+        const vib = saturation(c1) >= saturation(c2) ? rgbToHsl(c1.r, c1.g, c1.b) : rgbToHsl(c2.r, c2.g, c2.b);
+        setAmbientVars(
+            hslToCss(vib.h2, Math.min(1, vib.s + 0.12), vib.l * 0.6 + 0.35),
+            hslToCss(avg.h2, Math.min(1, avg.s + 0.04), 0.14),
+            hslToCss((avg.h2 + 20) % 360, Math.min(1, avg.s + 0.08), 0.3),
+            hslToCss(vib.h2, Math.min(1, vib.s + 0.15), 0.55)
+        );
+    } catch (e) {}
+}
+
+// ============================================================
+//  Ambient Game: Fake-Screen-Scanner (Maus über der Bühne)
+// ============================================================
+const fakeCanvas = document.getElementById('fake-screen');
+const stage = document.getElementById('stage');
+let agT = 0;
+let agLoopRunning = false;
+
+function startAgLoop() {
+    if (agLoopRunning) return;
+    agLoopRunning = true;
+    paintFakeScreen();
+}
+
+function paintFakeScreen() {
+    if (!stage.classList.contains('ag-active')) { agLoopRunning = false; return; }
+    // Canvas an die Bühne anpassen (sonst stimmen die getImageData-Koordinaten nicht)
+    const rect = stage.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(rect.width * dpr));
+    const h = Math.max(1, Math.round(rect.height * dpr));
+    if (fakeCanvas.width !== w) fakeCanvas.width = w;
+    if (fakeCanvas.height !== h) fakeCanvas.height = h;
+    const ctx = fakeCanvas.getContext('2d');
+    agT += 0.004;
+    for (let x = 0; x < w; x += 4) {
+        for (let y = 0; y < h; y += 4) {
+            const hue = (x / w * 360 + agT * 200) % 360;
+            const sat = 55 + 35 * Math.sin(x * 0.02 + agT * 3);
+            const light = 18 + 18 * Math.sin(y * 0.03 + agT * 2);
+            ctx.fillStyle = 'hsl(' + hue + ', ' + sat + '%, ' + light + '%)';
+            ctx.fillRect(x, y, 4, 4);
+        }
+    }
+    requestAnimationFrame(paintFakeScreen);
+}
+
+function probeFakeScreen(e) {
+    if (!stage.classList.contains('ag-active')) return;
+    const rect = stage.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const mx = Math.round((e.clientX - rect.left) * dpr), my = Math.round((e.clientY - rect.top) * dpr);
+    const ctx = fakeCanvas.getContext('2d');
+    // Durchschnitt über ein 40x40-Fenster (wie der echte Grabber um die Maus)
+    const sx = Math.max(0, Math.min(mx - 20, fakeCanvas.width - 40));
+    const sy = Math.max(0, Math.min(my - 20, fakeCanvas.height - 40));
+    const data = ctx.getImageData(sx, sy, 40, 40).data;
+    let ar = 0, ag = 0, ab = 0, n = 0;
+    let vr = 80, vg = 200, vb = 255, vmax = 0;
+    for (let i = 0; i < data.length; i += 4) {
+        ar += data[i]; ag += data[i + 1]; ab += data[i + 2]; n++;
+        const cm = Math.max(data[i], data[i + 1], data[i + 2]);
+        const cn = Math.min(data[i], data[i + 1], data[i + 2]);
+        const sat = cm === 0 ? 0 : (cm - cn) / cm;
+        if (sat > vmax && cm > 50) { vmax = sat; vr = data[i]; vg = data[i + 1]; vb = data[i + 2]; }
+    }
+    if (!n) return;
+    const avg = rgbToHsl(Math.round(ar / n), Math.round(ag / n), Math.round(ab / n));
+    const vib = rgbToHsl(vr, vg, vb);
+    setAmbientVars(
+        hslToCss(vib.h2, Math.min(1, vib.s + 0.12), vib.l * 0.6 + 0.35),
+        hslToCss(avg.h2, Math.min(1, avg.s + 0.04), 0.14),
+        hslToCss((avg.h2 + 20) % 360, Math.min(1, avg.s + 0.08), 0.3),
+        hslToCss(vib.h2, Math.min(1, vib.s + 0.15), 0.55)
+    );
+}
+
+// ============================================================
+//  Theme-Anwendung (identisch mit der App)
+// ============================================================
+const THEMES = [
+    ['standard',     'Standard'],
+    ['minecraft',    'Minecraft'],
+    ['simple',       'Simple'],
+    ['subnautica',   'Subnautica 1'],
+    ['subnautica2',  'Subnautica 2'],
+    ['doom',         'DOOM'],
+    ['cs2',          'Counter-Strike 2'],
+    ['rgb',          'White PC'],
+    ['rainbow',      'Rainbow'],
+    ['ambient',      'Ambient'],
+    ['ambient-game', 'Ambient Game'],
+    ['re',           'Resident Evil'],
+    ['discord',      'Discord'],
+];
+
+function applyTheme(theme) {
+    currentTheme = theme;
+    document.body.classList.toggle('mc-theme', theme === 'minecraft');
+    document.body.classList.toggle('simple-theme', theme === 'simple');
+    document.body.classList.toggle('subnautica-theme', theme === 'subnautica');
+    document.body.classList.toggle('subnautica2-theme', theme === 'subnautica2');
+    document.body.classList.toggle('doom-theme', theme === 'doom');
+    document.body.classList.toggle('cs2-theme', theme === 'cs2');
+    document.body.classList.toggle('rgb-theme', theme === 'rgb');
+    document.body.classList.toggle('rainbow-theme', theme === 'rainbow');
+    document.body.classList.toggle('ambient-theme', theme === 'ambient' || theme === 'ambient-game');
+    document.body.classList.toggle('ambientgame-theme', theme === 'ambient-game');
+    document.body.classList.toggle('re-theme', theme === 're');
+    document.body.classList.toggle('discord-theme', theme === 'discord');
+
+    stage.classList.toggle('ag-active', theme === 'ambient-game');
+    if (theme === 'ambient-game') startAgLoop();
+
+    document.querySelectorAll('#theme-picker button').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-theme') === theme);
+    });
+
+    if (theme === 'ambient') {
+        const t = FAKE_TRACKS[trackIdx];
+        applyAmbientFromColors(t.c1, t.c2);
+    }
+}
+
+// ============================================================
+//  Demo-Settings (⚙)
+// ============================================================
+function openDemoSettings() {
+    playClick();
+    buildStyleGrid();
+    document.getElementById('demo-settings').classList.add('open');
+    document.getElementById('demo-overlay').classList.add('open');
+}
+function closeDemoSettings() {
+    playClick();
+    document.getElementById('demo-settings').classList.remove('open');
+    document.getElementById('demo-overlay').classList.remove('open');
+}
+
+function buildStyleGrid() {
+    const grid = document.getElementById('style-grid');
+    grid.innerHTML = '';
+    THEMES.forEach(([val, label]) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.setAttribute('data-theme', val);
+        b.classList.toggle('active', val === currentTheme);
+        b.addEventListener('click', () => {
+            applyTheme(val);
+            playClick();
+            buildStyleGrid();  // aktiven Style markieren
+        });
+        grid.appendChild(b);
+    });
+}
+
+// ============================================================
+//  Init
+// ============================================================
+function buildPicker() {
+    const picker = document.getElementById('theme-picker');
+    THEMES.forEach(([val, label]) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.setAttribute('data-theme', val);
+        b.addEventListener('click', () => { applyTheme(val); playClick(); });
+        picker.appendChild(b);
+    });
+}
+
+function buildPlaylist() {
+    const pl = document.getElementById('playlist');
+    FAKE_TRACKS.forEach((t, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'song';
+        btn.innerHTML = '<img src="' + t.cover + '" alt=""><div class="s-info"><b>' + t.title + '</b><span>' + t.artist + '</span></div><span class="s-dur">' + formatTime(t.durationMs) + '</span>';
+        btn.addEventListener('click', () => { loadTrack(i, true); playClick(); });
+        btn.setAttribute('data-idx', i);
+        pl.appendChild(btn);
+    });
+}
+
+function markPlaying() {
+    document.querySelectorAll('#playlist .song').forEach(s => {
+        s.classList.toggle('playing', parseInt(s.getAttribute('data-idx')) === trackIdx);
+    });
+}
+
+// Seek auf der Timeline
+document.getElementById('progress-bar-container').addEventListener('click', (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    rebase(pct * dur);
+    playClick();
+});
+
+stage.addEventListener('mousemove', probeFakeScreen);
+
+// Start
+buildPicker();
+buildPlaylist();
+loadTrack(0, false);
+applyTheme('ambient');   // Ambient ist der Standard (wie in der App)
+requestAnimationFrame(animateProgress);
+</script>
+
+</body>
+</html>
